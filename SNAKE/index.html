@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스네이크 게임</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-wrap">
+    <h1>스네이크 게임</h1>
+
+    <div class="score-board">
+      <div class="score-item">
+        <span class="score-label">점수</span>
+        <span id="score">0</span>
+      </div>
+      <div class="score-item">
+        <span class="score-label">최고 점수</span>
+        <span id="high-score">0</span>
+      </div>
+      <div class="score-item">
+        <span class="score-label">레벨</span>
+        <span id="level">1</span>
+      </div>
+    </div>
+
+    <div class="settings">
+      <label for="difficulty-select">난이도</label>
+      <select id="difficulty-select">
+        <option value="200">쉬움</option>
+        <option value="150" selected>보통</option>
+        <option value="100">어려움</option>
+        <option value="50">매우 어려움</option>
+      </select>
+    </div>
+
+    <div class="board-area">
+      <canvas id="game-canvas" width="400" height="400"></canvas>
+
+      <div id="game-over-panel" class="overlay-panel hidden">
+        <p class="overlay-title">게임 오버</p>
+        <p id="final-score">최종 점수: 0</p>
+        <button id="restart-btn" type="button">다시 시작</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="start-btn" type="button">게임 시작</button>
+      <button id="pause-btn" type="button" class="hidden">일시정지</button>
+    </div>
+  </div>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
