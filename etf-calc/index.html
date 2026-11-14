@@ -41,6 +41,14 @@
   .err{color:var(--warn);font-size:12.5px;margin-top:8px}
   details summary{cursor:pointer;color:var(--muted);font-size:13px}
   .hint{color:var(--muted);font-size:12px;margin-top:6px}
+  /* 좁은 화면(스마트폰)에서 단가 5자리가 잘리지 않도록 */
+  @media (max-width:430px){
+    body{padding:12px 10px 48px}
+    .card{padding:10px}
+    th,td{padding:7px 2px}
+    .cell{width:84px;padding:6px 4px;font-size:13px}
+    .name{font-size:12.5px}
+  }
 </style>
 </head>
 <body>
@@ -56,7 +64,11 @@
   <div class="row">
     <label>매수일</label>
     <input type="number" id="buyDay" value="28" min="1" max="31" style="width:80px">
-    <label style="min-width:auto">기준일</label>
+    <label style="min-width:auto">계산할 달</label>
+    <input type="month" id="targetMonth" style="flex:1">
+  </div>
+  <div class="row">
+    <label>기준일</label>
     <input type="date" id="priceDate" style="flex:1">
   </div>
   <div class="row" style="margin-top:12px">
@@ -286,8 +298,7 @@ async function loadMarket(){
     market = await r.json();
     const last = market.days[market.days.length-1] || "";
     const dEl = document.getElementById("priceDate");
-    if(!dEl.value){ dEl.value = last; }
-    else if(dEl.value > last){ dEl.value = last; }
+    if(!dEl.value) dEl.value = buyDateFor(0);
     applyDate();
     document.getElementById("err").textContent = "";
   }catch(e){
@@ -297,6 +308,37 @@ async function loadMarket(){
   }
 }
 
+function buyDateFor(monthOffset){
+  const mv = document.getElementById("targetMonth").value;
+  let y, m;
+  if(mv){
+    y = Number(mv.slice(0,4)); m = Number(mv.slice(5,7));
+  }else{
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + (monthOffset||0));
+    y = d.getFullYear(); m = d.getMonth()+1;
+  }
+  let day = Number(document.getElementById("buyDay").value)||28;
+  const lastDay = new Date(y, m, 0).getDate();
+  if(day > lastDay) day = lastDay;
+  return y + "-" + String(m).padStart(2,"0") + "-" + String(day).padStart(2,"0");
+}
+
+function setBasisToBuyDay(){
+  const el = document.getElementById("priceDate");
+  const target = buyDateFor(0);
+  el.value = target;
+  if(market.days.length){
+    const last = market.days[market.days.length-1];
+    if(target > last) el.value = last;   // 아직 오지 않은 날짜면 최근 거래일
+  }
+  applyDate();
+}
+
+document.getElementById("buyDay").addEventListener("change", setBasisToBuyDay);
+document.getElementById("buyDay").addEventListener("input", setBasisToBuyDay);
+document.getElementById("targetMonth").addEventListener("change", setBasisToBuyDay);
 document.getElementById("refreshBtn").addEventListener("click", applyDate);
 document.getElementById("calcBtn").addEventListener("click", compute);
 document.getElementById("totalAmount").addEventListener("input", compute);
@@ -321,8 +363,8 @@ document.getElementById("resetBtn").addEventListener("click", ()=>{
 (function init(){
   loadState();
   const d = new Date();
-  const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  document.getElementById("priceDate").value = iso;
+  document.getElementById("targetMonth").value = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  document.getElementById("priceDate").value = buyDateFor(0);
   render();
   loadMarket();
 })();
