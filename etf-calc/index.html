@@ -75,6 +75,12 @@
     <button id="refreshBtn" style="flex:1">그날 종가로 계산</button>
     <button class="ghost" id="calcBtn">다시 계산</button>
   </div>
+  <div class="row" style="margin-top:10px">
+    <label style="min-width:auto;display:flex;gap:8px;align-items:center;font-size:13px;color:var(--text)">
+      <input type="checkbox" id="topupChk" checked style="width:16px;height:16px">
+      남는 금액으로 한 주씩 더 담기
+    </label>
+  </div>
   <div class="err" id="err"></div>
   <div class="hint" id="status"></div>
 </div>
@@ -244,32 +250,67 @@ function renderEdit(){
   }));
 }
 
+let lastQtys = [];   // 화면에 실제 적용된 수량(기록 저장에 사용)
+
 function compute(){
   const total = Number(document.getElementById("totalAmount").value)||0;
   const sumW = etfs.reduce((a,e)=>a+Number(e.weight||0),0);
-  let bought = 0, allocated = 0, missing = [];
+  const rows = [];
+  let bought = 0, allocated = 0;
+  const missing = [];
+
   etfs.forEach((e,i)=>{
     const alloc = sumW>0 ? total * (Number(e.weight||0)/sumW) : 0;
     allocated += alloc;
     const p = Number(prices[e.code]||0);
     if(!p) missing.push(e.code);
-    let qty;
     const ov = qtys[e.code];
-    if(ov != null) qty = Number(ov);
-    else qty = p>0 ? Math.floor(alloc/p) : 0;
-    const cost = p>0 ? qty*p : 0;
-    bought += cost;
-    const amtEl = document.getElementById("amt-"+i);
-    const qtyEl = document.querySelector(`input[data-qty="${i}"]`);
-    if(amtEl) amtEl.textContent = p>0 ? won(cost) : "-";
-    if(qtyEl && qtyEl.value === "" && p>0) qtyEl.placeholder = String(qty);
+    const manual = ov != null;
+    let qty = manual ? Number(ov) : (p>0 ? Math.floor(alloc/p) : 0);
+    rows.push({i, e, p, alloc, qty, manual, extra:0});
+    bought += p>0 ? qty*p : 0;
   });
-  const left = total - bought;
+
+  // 남는 금액으로 살 수 있는 것 중 가장 비싼(=잔액에 가장 가까운) 종목을 한 주씩 반복 매수
+  let left = total - bought;
+  const used = [];
+  const topupOn = document.getElementById("topupChk") ? document.getElementById("topupChk").checked : true;
+  if(topupOn){
+    let guard = 0;
+    while(guard++ < 500){
+      let pick = null;
+      rows.forEach(r=>{
+        if(r.p>0 && r.p<=left && (!pick || r.p>pick.p)) pick = r;
+      });
+      if(!pick) break;
+      pick.qty += 1; pick.extra += 1; left -= pick.p;
+      const hit = used.find(u=>u.e===pick.e);
+      if(hit) hit.n += 1; else used.push({e: pick.e, n: 1, p: pick.p});
+    }
+    bought = total - left;
+  }
+
+  lastQtys = [];
+  rows.forEach(r=>{
+    const cost = r.p>0 ? r.qty*r.p : 0;
+    lastQtys[r.i] = r.qty;
+    const amtEl = document.getElementById("amt-"+r.i);
+    const qtyEl = document.querySelector(`input[data-qty="${r.i}"]`);
+    if(amtEl) amtEl.textContent = r.p>0 ? won(cost) : "-";
+    if(qtyEl){
+      if(qtyEl.value === "") qtyEl.placeholder = r.p>0 ? String(r.qty) : "-";
+    }
+  });
+
   document.getElementById("sumLine").innerHTML =
     `${won(bought)} <span style="color:var(--muted);font-weight:400">/ 잔액 ${won(left)}</span>`;
+
   const basis = document.getElementById("basis");
   if(missing.length){
     basis.textContent = "단가가 없는 종목: " + missing.join(", ") + " — 단가를 직접 입력해 주세요.";
+  }else if(used.length){
+    const note = used.map(u=>u.e.name + " " + u.n + "주").join(", ");
+    basis.textContent = "남는 금액으로 " + note + "를 더 담았어요. 남은 잔액은 " + won(left) + "입니다.";
   }else{
     basis.textContent = "수량 칸을 비우면 배정 금액에 맞춰 자동 계산하고, 직접 넣으면 그 수량으로 금액과 잔액을 다시 계산합니다.";
   }
@@ -342,13 +383,14 @@ document.getElementById("targetMonth").addEventListener("change", setBasisToBuyD
 document.getElementById("refreshBtn").addEventListener("click", applyDate);
 document.getElementById("calcBtn").addEventListener("click", compute);
 document.getElementById("totalAmount").addEventListener("input", compute);
+document.getElementById("topupChk").addEventListener("change", compute);
 document.getElementById("priceDate").addEventListener("change", applyDate);
 document.getElementById("saveBtn").addEventListener("click", ()=>{
   const r = compute();
   const month = monthKey();
   history = history.filter(h=>h.month!==month);
   history.push({month, total:r.total, bought:r.bought, left:r.left,
-    items: etfs.map(e=>({name:e.name, code:e.code, price:prices[e.code]||0, qty:qtys[e.code]??null}))});
+    items: etfs.map((e,i)=>({name:e.name, code:e.code, price:prices[e.code]||0, qty:lastQtys[i]??null}))});
   localStorage.setItem(LS_HIST, JSON.stringify(history));
   renderHist();
 });
