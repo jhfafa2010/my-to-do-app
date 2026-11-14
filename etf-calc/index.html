@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>월 적립 계산기</title>
+<style>
+  :root{
+    --bg:#0f1117; --card:#181b24; --line:#262a36; --text:#e9ecf3;
+    --muted:#9aa3b5; --accent:#9a7bff; --ok:#3ddc97; --warn:#ffb84d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    font-size:15px;line-height:1.5;padding:16px 14px 60px;max-width:720px;margin:0 auto}
+  h1{font-size:19px;margin:4px 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .row+.row{margin-top:10px}
+  label{color:var(--muted);font-size:13px;min-width:70px}
+  input[type=number],input[type=text],input[type=date],input[type=month]{
+    background:#10131b;color:var(--text);border:1px solid var(--line);border-radius:9px;
+    padding:9px 10px;font-size:15px;width:100%;font-family:inherit}
+  input:focus{outline:none;border-color:var(--accent)}
+  button{background:var(--accent);color:#12101c;border:0;border-radius:10px;
+    padding:11px 14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
+  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:500}
+  button:active{transform:scale(.99)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{color:var(--muted);font-weight:500;text-align:right;padding:6px 4px;border-bottom:1px solid var(--line);font-size:12px}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:8px 4px;border-bottom:1px solid #1e2230;text-align:right;vertical-align:middle}
+  .name{font-size:13px;line-height:1.3}
+  .code{color:var(--muted);font-size:11px}
+  .num{font-variant-numeric:tabular-nums}
+  .cell{width:92px;text-align:right;padding:6px 8px;font-size:13.5px}
+  .foot{color:var(--muted);font-size:12px;margin-top:10px}
+  .total{display:flex;justify-content:space-between;font-size:14px;padding-top:10px;margin-top:4px;border-top:1px solid var(--line)}
+  .total b{font-size:17px}
+  .err{color:var(--warn);font-size:12.5px;margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:13px}
+  .hint{color:var(--muted);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<h1>월 적립 계산기</h1>
+<div class="sub">정해진 금액을 그날 단가로 나눠 수량을 계산합니다. 수량을 직접 고쳐도 금액과 잔액이 다시 계산됩니다.</div>
+
+<div class="card">
+  <div class="row">
+    <label>매월 총액</label>
+    <input type="number" id="totalAmount" value="700000" step="10000" style="flex:1">
+  </div>
+  <div class="row">
+    <label>매수일</label>
+    <input type="number" id="buyDay" value="28" min="1" max="31" style="width:80px">
+    <label style="min-width:auto">기준일</label>
+    <input type="date" id="priceDate" style="flex:1">
+  </div>
+  <div class="row" style="margin-top:12px">
+    <button id="refreshBtn" style="flex:1">그날 종가로 계산</button>
+    <button class="ghost" id="calcBtn">다시 계산</button>
+  </div>
+  <div class="err" id="err"></div>
+  <div class="hint" id="status"></div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>종목 / 비중</th>
+        <th>단가</th>
+        <th>수량</th>
+        <th>매수금액</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="total"><span>합계</span><b id="sumLine">-</b></div>
+  <div class="hint" id="basis">-</div>
+</div>
+
+<div class="card">
+  <div class="row" style="justify-content:space-between">
+    <b style="font-size:14px">이번 달 기록</b>
+    <button class="ghost" id="saveBtn" style="padding:8px 12px;font-size:13px">기록 저장</button>
+  </div>
+  <table style="margin-top:10px">
+    <thead><tr><th>월</th><th>총액</th><th>매수금액</th><th>잔액</th></tr></thead>
+    <tbody id="histBody"></tbody>
+  </table>
+  <div class="foot" id="histFoot"></div>
+</div>
+
+<details class="card">
+  <summary>종목·비중 직접 수정하기</summary>
+  <div id="editArea" style="margin-top:12px"></div>
+  <div class="row" style="margin-top:10px">
+    <button class="ghost" id="addBtn" style="flex:1;font-size:13px;padding:9px">종목 추가</button>
+    <button class="ghost" id="resetBtn" style="flex:1;font-size:13px;padding:9px">기본값 복원</button>
+  </div>
+</details>
+
+<script>
+const DEFAULT_ETFS = [
+  {name:"KODEX 미국S&P500",           code:"379800", weight:16.67},
+  {name:"KODEX 미국나스닥100",         code:"379810", weight:16.67},
+  {name:"KODEX TDF2040액티브",         code:"433980", weight:16.67},
+  {name:"KODEX 미국배당커버드콜액티브", code:"441640", weight:16.66},
+  {name:"ACE 미국빅테크TOP7 Plus",     code:"465580", weight:16.67},
+  {name:"KODEX 한국부동산리츠인프라",   code:"476800", weight:16.66}
+];
+
+const LS_KEY = "monthly-etf-calc-v2";
+const LS_HIST = "monthly-etf-hist-v2";
+
+let etfs, prices, qtys, history;
+let market = {days:[], series:{}};   // prices.json
+
+function loadState(){
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch(e){}
+  etfs = (s && s.etfs) ? s.etfs : DEFAULT_ETFS.map(x=>({...x}));
+  prices = (s && s.prices) || {};
+  qtys   = (s && s.qtys)   || {};
+  history = JSON.parse(localStorage.getItem(LS_HIST) || "[]");
+}
+function save(){
+  localStorage.setItem(LS_KEY, JSON.stringify({etfs, prices, qtys}));
+}
+function won(n){
+  return (Math.round(n)).toLocaleString("ko-KR") + "원";
+}
+function monthKey(){
+  const v = document.getElementById("targetMonth") ? document.getElementById("targetMonth").value : "";
+  if(v) return v;
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+}
+
+/* 기준일 이하의 가장 가까운 종가 */
+function closeOnOrBefore(code, day){
+  const s = market.series[code];
+  if(!s || !market.days.length) return {price:0, day:""};
+  let idx = -1;
+  for(let i=0;i<market.days.length;i++){
+    if(market.days[i] <= day) idx = i; else break;
+  }
+  for(let i=idx;i>=0;i--){
+    const v = s[i];
+    if(v) return {price:v, day:market.days[i]};
+  }
+  return {price:0, day:""};
+}
+
+function applyDate(){
+  const day = document.getElementById("priceDate").value;
+  if(!day || !market.days.length) return;
+  const used = [];
+  etfs.forEach(e=>{
+    const r = closeOnOrBefore(e.code, day);
+    if(r.price>0){ prices[e.code] = r.price; used.push(r.day); }
+  });
+  save();
+  const newest = used.sort().pop() || "";
+  const st = document.getElementById("status");
+  st.textContent = newest ? (newest + " 종가를 적용했어요.") : "";
+  render();
+}
+
+function render(){
+  const tb = document.getElementById("tbody");
+  tb.innerHTML = "";
+  etfs.forEach((e,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="name">${e.name}</div><div class="code">${e.code} · ${e.weight}%</div></td>
+      <td><input class="cell" type="number" data-price="${i}" value="${prices[e.code]||""}" placeholder="단가"></td>
+      <td><input class="cell" type="number" data-qty="${i}" value="${qtys[e.code]??""}" placeholder="-"></td>
+      <td class="num" id="amt-${i}">-</td>`;
+    tb.appendChild(tr);
+  });
+  tb.querySelectorAll("input[data-price]").forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const i = Number(inp.dataset.price);
+      const v = Number(inp.value.replace(/[^0-9.]/g,""));
+      if(v>0) prices[etfs[i].code] = v; else delete prices[etfs[i].code];
+      save(); compute();
+    });
+  });
+  tb.querySelectorAll("input[data-qty]").forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const i = Number(inp.dataset.qty);
+      const raw = inp.value.replace(/[^0-9]/g,"");
+      if(raw === "") delete qtys[etfs[i].code];
+      else qtys[etfs[i].code] = Number(raw);
+      save(); compute();
+    });
+  });
+  renderEdit();
+  compute();
+  renderHist();
+}
+
+function renderEdit(){
+  const area = document.getElementById("editArea");
+  area.innerHTML = "";
+  etfs.forEach((e,i)=>{
+    const d = document.createElement("div");
+    d.className = "row";
+    d.innerHTML = `
+      <input type="text" data-name="${i}" value="${e.name}" style="flex:2;font-size:13.5px;padding:8px">
+      <input type="text" data-code="${i}" value="${e.code}" style="width:86px;font-size:13.5px;padding:8px">
+      <input type="number" data-weight="${i}" value="${e.weight}" step="0.01" style="width:70px;font-size:13.5px;padding:8px">
+      <button class="ghost" data-del="${i}" style="padding:8px 10px;font-size:13px">×</button>`;
+    area.appendChild(d);
+  });
+  area.querySelectorAll("[data-name]").forEach(inp=>inp.addEventListener("input",()=>{
+    etfs[Number(inp.dataset.name)].name = inp.value; save(); compute();
+  }));
+  area.querySelectorAll("[data-code]").forEach(inp=>inp.addEventListener("input",()=>{
+    etfs[Number(inp.dataset.code)].code = inp.value.trim(); save(); compute();
+  }));
+  area.querySelectorAll("[data-weight]").forEach(inp=>inp.addEventListener("input",()=>{
+    etfs[Number(inp.dataset.weight)].weight = Number(inp.value)||0; save(); render();
+  }));
+  area.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
+    etfs.splice(Number(b.dataset.del),1); save(); render();
+  }));
+}
+
+function compute(){
+  const total = Number(document.getElementById("totalAmount").value)||0;
+  const sumW = etfs.reduce((a,e)=>a+Number(e.weight||0),0);
+  let bought = 0, allocated = 0, missing = [];
+  etfs.forEach((e,i)=>{
+    const alloc = sumW>0 ? total * (Number(e.weight||0)/sumW) : 0;
+    allocated += alloc;
+    const p = Number(prices[e.code]||0);
+    if(!p) missing.push(e.code);
+    let qty;
+    const ov = qtys[e.code];
+    if(ov != null) qty = Number(ov);
+    else qty = p>0 ? Math.floor(alloc/p) : 0;
+    const cost = p>0 ? qty*p : 0;
+    bought += cost;
+    const amtEl = document.getElementById("amt-"+i);
+    const qtyEl = document.querySelector(`input[data-qty="${i}"]`);
+    if(amtEl) amtEl.textContent = p>0 ? won(cost) : "-";
+    if(qtyEl && qtyEl.value === "" && p>0) qtyEl.placeholder = String(qty);
+  });
+  const left = total - bought;
+  document.getElementById("sumLine").innerHTML =
+    `${won(bought)} <span style="color:var(--muted);font-weight:400">/ 잔액 ${won(left)}</span>`;
+  const basis = document.getElementById("basis");
+  if(missing.length){
+    basis.textContent = "단가가 없는 종목: " + missing.join(", ") + " — 단가를 직접 입력해 주세요.";
+  }else{
+    basis.textContent = "수량 칸을 비우면 배정 금액에 맞춰 자동 계산하고, 직접 넣으면 그 수량으로 금액과 잔액을 다시 계산합니다.";
+  }
+  return {total, bought, left, allocated};
+}
+
+function renderHist(){
+  const tb = document.getElementById("histBody");
+  tb.innerHTML = "";
+  if(!history.length){
+    document.getElementById("histFoot").textContent = "저장된 기록이 없습니다.";
+    return;
+  }
+  history.slice().sort((a,b)=> b.month.localeCompare(a.month)).forEach(h=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${h.month}</td><td class="num">${won(h.total)}</td><td class="num">${won(h.bought)}</td><td class="num">${won(h.left)}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById("histFoot").textContent = "기록은 이 브라우저에만 저장됩니다.";
+}
+
+async function loadMarket(){
+  try{
+    const r = await fetch("prices.json", {cache:"no-store"});
+    if(!r.ok) throw new Error("no data");
+    market = await r.json();
+    const last = market.days[market.days.length-1] || "";
+    const dEl = document.getElementById("priceDate");
+    if(!dEl.value){ dEl.value = last; }
+    else if(dEl.value > last){ dEl.value = last; }
+    applyDate();
+    document.getElementById("err").textContent = "";
+  }catch(e){
+    document.getElementById("status").textContent = "";
+    document.getElementById("err").textContent = "종가 데이터를 불러오지 못했어요. 단가를 직접 입력해 주세요.";
+    render();
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", applyDate);
+document.getElementById("calcBtn").addEventListener("click", compute);
+document.getElementById("totalAmount").addEventListener("input", compute);
+document.getElementById("priceDate").addEventListener("change", applyDate);
+document.getElementById("saveBtn").addEventListener("click", ()=>{
+  const r = compute();
+  const month = monthKey();
+  history = history.filter(h=>h.month!==month);
+  history.push({month, total:r.total, bought:r.bought, left:r.left,
+    items: etfs.map(e=>({name:e.name, code:e.code, price:prices[e.code]||0, qty:qtys[e.code]??null}))});
+  localStorage.setItem(LS_HIST, JSON.stringify(history));
+  renderHist();
+});
+document.getElementById("addBtn").addEventListener("click", ()=>{
+  etfs.push({name:"새 종목", code:"", weight:0}); save(); render();
+});
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(!confirm("종목 목록을 기본값으로 되돌릴까요?")) return;
+  etfs = DEFAULT_ETFS.map(x=>({...x})); prices = {}; qtys = {}; save(); render();
+});
+
+(function init(){
+  loadState();
+  const d = new Date();
+  const iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  document.getElementById("priceDate").value = iso;
+  render();
+  loadMarket();
+})();
+</script>
+</body>
+</html>
