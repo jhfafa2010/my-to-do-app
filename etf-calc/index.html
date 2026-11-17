@@ -40,7 +40,10 @@
   .code{color:var(--muted);font-size:11px}
   .num{font-variant-numeric:tabular-nums}
   td.num{white-space:nowrap}
-  .cell{width:100%;text-align:right;padding:6px 8px;font-size:13.5px}
+  .cell{width:100%;text-align:right;padding:6px 8px;font-size:13.5px
+    -moz-appearance:textfield;appearance:textfield}
+  /* 표 안의 숫자칸은 증감 화살표를 숨겨 좁은 화면에서도 숫자가 잘리지 않게 */
+  .cell::-webkit-outer-spin-button,.cell::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   .foot{color:var(--muted);font-size:12px;margin-top:10px}
   .total{display:flex;justify-content:space-between;font-size:14px;padding-top:10px;margin-top:4px;border-top:1px solid var(--line)}
   .total b{font-size:17px}
@@ -62,11 +65,11 @@
     th,td{padding:7px 2px}
     th{font-size:11.5px}
     .cell{width:100%;padding:6px 4px;font-size:13px}
-    .name{font-size:12.5px}
+    .name{font-size:12px}
     .code{font-size:10.5px}
-    #etfTable .c-price{width:72px}
-    #etfTable .c-qty{width:56px}
-    #etfTable .c-amt{width:84px}
+    #etfTable .c-price{width:74px}
+    #etfTable .c-qty{width:50px}
+    #etfTable .c-amt{width:86px}
     .tab{font-size:13.5px;padding:9px 6px}
   }
 </style>
