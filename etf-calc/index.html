@@ -41,6 +41,14 @@
   .err{color:var(--warn);font-size:12.5px;margin-top:8px}
   details summary{cursor:pointer;color:var(--muted);font-size:13px}
   .hint{color:var(--muted);font-size:12px;margin-top:6px}
+  /* 계좌 전환 탭 */
+  .tabs{display:flex;gap:6px;background:#141722;border:1px solid var(--line);
+    border-radius:12px;padding:4px;margin-bottom:8px}
+  .tab{flex:1;background:transparent;color:var(--muted);border:0;border-radius:9px;
+    padding:9px 8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+    white-space:nowrap;line-height:1.2}
+  .tab.active{background:var(--accent);color:#12101c}
+  .tab:active{transform:none}
   /* 좁은 화면(스마트폰)에서 단가 5자리가 잘리지 않도록 */
   @media (max-width:430px){
     body{padding:12px 10px 48px}
@@ -48,6 +56,7 @@
     th,td{padding:7px 2px}
     .cell{width:84px;padding:6px 4px;font-size:13px}
     .name{font-size:12.5px}
+    .tab{font-size:13.5px;padding:9px 6px}
   }
 </style>
 </head>
@@ -55,6 +64,12 @@
 
 <h1>월 적립 계산기</h1>
 <div class="sub">정해진 금액을 그날 단가로 나눠 수량을 계산합니다. 수량을 직접 고쳐도 금액과 잔액이 다시 계산됩니다.</div>
+
+<div class="tabs" role="tablist" aria-label="계좌 선택">
+  <button class="tab active" role="tab" aria-selected="true" data-acc="pension">연금저축</button>
+  <button class="tab" role="tab" aria-selected="false" data-acc="irp">IRP</button>
+</div>
+<div class="hint" id="accNote" style="margin:0 0 12px 2px"></div>
 
 <div class="card">
   <div class="row">
@@ -103,7 +118,7 @@
 
 <div class="card">
   <div class="row" style="justify-content:space-between">
-    <b style="font-size:14px">이번 달 기록</b>
+    <b style="font-size:14px" id="histTitle">이번 달 기록</b>
     <button class="ghost" id="saveBtn" style="padding:8px 12px;font-size:13px">기록 저장</button>
   </div>
   <table style="margin-top:10px">
@@ -123,7 +138,7 @@
 </details>
 
 <script>
-const DEFAULT_ETFS = [
+const DEFAULT_PENSION = [
   {name:"KODEX 미국S&P500",           code:"379800", weight:16.67},
   {name:"KODEX 미국나스닥100",         code:"379810", weight:16.67},
   {name:"KODEX TDF2040액티브",         code:"433980", weight:16.67},
@@ -132,23 +147,85 @@ const DEFAULT_ETFS = [
   {name:"KODEX 한국부동산리츠인프라",   code:"476800", weight:16.66}
 ];
 
-const LS_KEY = "monthly-etf-calc-v2";
-const LS_HIST = "monthly-etf-hist-v2";
+const DEFAULT_IRP = [
+  {name:"KODEX 미국S&P500",           code:"379800", weight:50},
+  {name:"KODEX 미국나스닥100",         code:"379810", weight:20},
+  {name:"KODEX 미국배당커버드콜액티브", code:"441640", weight:15},
+  {name:"KODEX TDF2040액티브",         code:"433980", weight:15}
+];
 
-let etfs, prices, qtys, history;
-let market = {days:[], series:{}};   // prices.json
+const DEFAULT_BY_ACCOUNT = {pension: DEFAULT_PENSION, irp: DEFAULT_IRP};
+const ACCOUNT_LABEL = {pension:"연금저축", irp:"IRP"};
+const ACCOUNT_ORDER = ["pension", "irp"];
+
+const LS_KEY = "monthly-etf-calc-v3";      // 두 계좌 통합 저장
+const LEGACY_KEY = "monthly-etf-calc-v2";  // 이전 버전(연금저축 단일)
+const LEGACY_HIST = "monthly-etf-hist-v2";
+
+let data;                                  // {active, accounts:{pension:{etfs,prices,qtys,history}, irp:{...}}}
+let etfs, prices, qtys, history;           // 현재 보고 있는 계좌의 값(참조)
+let market = {days:[], series:{}};         // prices.json
+
+function blankAccount(kind){
+  return {
+    etfs: (DEFAULT_BY_ACCOUNT[kind] || []).map(x=>({...x})),
+    prices: {}, qtys: {}, history: []
+  };
+}
+function normalizeAccount(a, kind){
+  const d = blankAccount(kind);
+  if(!a || typeof a !== "object") return d;
+  if(Array.isArray(a.etfs) && a.etfs.length){
+    d.etfs = a.etfs.map(x=>({name:String(x.name||""), code:String(x.code||""), weight:Number(x.weight)||0}));
+  }
+  if(a.prices && typeof a.prices === "object") d.prices = {...a.prices};
+  if(a.qtys && typeof a.qtys === "object") d.qtys = {...a.qtys};
+  if(Array.isArray(a.history)) d.history = a.history;
+  return d;
+}
 
 function loadState(){
   let s = null;
   try{ s = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch(e){}
-  etfs = (s && s.etfs) ? s.etfs : DEFAULT_ETFS.map(x=>({...x}));
-  prices = (s && s.prices) || {};
-  qtys   = (s && s.qtys)   || {};
-  history = JSON.parse(localStorage.getItem(LS_HIST) || "[]");
+  if(s && s.accounts){
+    data = {
+      active: s.active === "irp" ? "irp" : "pension",
+      accounts: {
+        pension: normalizeAccount(s.accounts.pension, "pension"),
+        irp: normalizeAccount(s.accounts.irp, "irp")
+      }
+    };
+  }else{
+    data = {active:"pension", accounts:{pension: blankAccount("pension"), irp: blankAccount("irp")}};
+    // 이전 버전(연금저축만 있던 시절)의 종목·단가·수량·기록을 연금저축 계좌로 이어받기
+    try{
+      const old = JSON.parse(localStorage.getItem(LEGACY_KEY) || "null");
+      if(old){
+        const p = data.accounts.pension;
+        if(Array.isArray(old.etfs) && old.etfs.length){
+          p.etfs = old.etfs.map(x=>({name:String(x.name||""), code:String(x.code||""), weight:Number(x.weight)||0}));
+        }
+        if(old.prices && typeof old.prices === "object") p.prices = {...old.prices};
+        if(old.qtys && typeof old.qtys === "object") p.qtys = {...old.qtys};
+      }
+      const oldHist = JSON.parse(localStorage.getItem(LEGACY_HIST) || "[]");
+      if(Array.isArray(oldHist)) data.accounts.pension.history = oldHist;
+    }catch(e){}
+  }
+  bindActive();
 }
+
+function bindActive(){
+  const a = data.accounts[data.active];
+  etfs = a.etfs; prices = a.prices; qtys = a.qtys; history = a.history;
+}
+
 function save(){
-  localStorage.setItem(LS_KEY, JSON.stringify({etfs, prices, qtys}));
+  const a = data.accounts[data.active];
+  a.etfs = etfs; a.prices = prices; a.qtys = qtys; a.history = history;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e){}
 }
+
 function won(n){
   return (Math.round(n)).toLocaleString("ko-KR") + "원";
 }
@@ -174,13 +251,17 @@ function closeOnOrBefore(code, day){
   return {price:0, day:""};
 }
 
+/* 기준일 종가를 두 계좌 모두에 적용 (계좌를 바꿔도 단가가 어긋나지 않도록) */
 function applyDate(){
   const day = document.getElementById("priceDate").value;
   if(!day || !market.days.length) return;
   const used = [];
-  etfs.forEach(e=>{
-    const r = closeOnOrBefore(e.code, day);
-    if(r.price>0){ prices[e.code] = r.price; used.push(r.day); }
+  ACCOUNT_ORDER.forEach(kind=>{
+    const a = data.accounts[kind];
+    a.etfs.forEach(e=>{
+      const r = closeOnOrBefore(e.code, day);
+      if(r.price>0){ a.prices[e.code] = r.price; used.push(r.day); }
+    });
   });
   save();
   const newest = used.sort().pop() || "";
@@ -219,8 +300,38 @@ function render(){
     });
   });
   renderEdit();
+  updateAccNote();
   compute();
   renderHist();
+}
+
+function updateAccNote(){
+  const el = document.getElementById("accNote");
+  if(!el) return;
+  const sumW = etfs.reduce((a,e)=>a+Number(e.weight||0),0);
+  const wTxt = Math.abs(sumW-100) < 0.05 ? "100%" : (Math.round(sumW*100)/100) + "%";
+  el.textContent = ACCOUNT_LABEL[data.active] + " · " + etfs.length + "종목 · 비중 합계 " + wTxt;
+}
+
+function updateTabs(){
+  document.querySelectorAll(".tab").forEach(b=>{
+    const on = b.dataset.acc === data.active;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  const t = document.getElementById("histTitle");
+  if(t) t.textContent = "이번 달 기록 · " + ACCOUNT_LABEL[data.active];
+}
+
+function switchAccount(kind){
+  if(!data.accounts[kind] || data.active === kind) return;
+  save();
+  data.active = kind;
+  bindActive();
+  save();
+  document.getElementById("status").textContent = "";
+  updateTabs();
+  render();
 }
 
 function renderEdit(){
@@ -243,7 +354,7 @@ function renderEdit(){
     etfs[Number(inp.dataset.code)].code = inp.value.trim(); save(); compute();
   }));
   area.querySelectorAll("[data-weight]").forEach(inp=>inp.addEventListener("input",()=>{
-    etfs[Number(inp.dataset.weight)].weight = Number(inp.value)||0; save(); render();
+    etfs[Number(inp.dataset.weight)].weight = Number(inp.value)||0; save(); updateAccNote(); render();
   }));
   area.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click",()=>{
     etfs.splice(Number(b.dataset.del),1); save(); render();
@@ -321,7 +432,7 @@ function renderHist(){
   const tb = document.getElementById("histBody");
   tb.innerHTML = "";
   if(!history.length){
-    document.getElementById("histFoot").textContent = "저장된 기록이 없습니다.";
+    document.getElementById("histFoot").textContent = ACCOUNT_LABEL[data.active] + " 기록이 없습니다. 기록은 이 브라우저에만 저장됩니다.";
     return;
   }
   history.slice().sort((a,b)=> b.month.localeCompare(a.month)).forEach(h=>{
@@ -329,7 +440,7 @@ function renderHist(){
     tr.innerHTML = `<td>${h.month}</td><td class="num">${won(h.total)}</td><td class="num">${won(h.bought)}</td><td class="num">${won(h.left)}</td>`;
     tb.appendChild(tr);
   });
-  document.getElementById("histFoot").textContent = "기록은 이 브라우저에만 저장됩니다.";
+  document.getElementById("histFoot").textContent = ACCOUNT_LABEL[data.active] + " 기록 · 이 브라우저에만 저장됩니다.";
 }
 
 async function loadMarket(){
@@ -337,7 +448,6 @@ async function loadMarket(){
     const r = await fetch("prices.json", {cache:"no-store"});
     if(!r.ok) throw new Error("no data");
     market = await r.json();
-    const last = market.days[market.days.length-1] || "";
     const dEl = document.getElementById("priceDate");
     if(!dEl.value) dEl.value = buyDateFor(0);
     applyDate();
@@ -377,6 +487,9 @@ function setBasisToBuyDay(){
   applyDate();
 }
 
+document.querySelectorAll(".tab").forEach(b=>{
+  b.addEventListener("click", ()=>switchAccount(b.dataset.acc));
+});
 document.getElementById("buyDay").addEventListener("change", setBasisToBuyDay);
 document.getElementById("buyDay").addEventListener("input", setBasisToBuyDay);
 document.getElementById("targetMonth").addEventListener("change", setBasisToBuyDay);
@@ -389,17 +502,19 @@ document.getElementById("saveBtn").addEventListener("click", ()=>{
   const r = compute();
   const month = monthKey();
   history = history.filter(h=>h.month!==month);
-  history.push({month, total:r.total, bought:r.bought, left:r.left,
+  history.push({month, total:r.total, bought:r.bought, left:r.left, account:data.active,
     items: etfs.map((e,i)=>({name:e.name, code:e.code, price:prices[e.code]||0, qty:lastQtys[i]??null}))});
-  localStorage.setItem(LS_HIST, JSON.stringify(history));
+  save();
   renderHist();
 });
 document.getElementById("addBtn").addEventListener("click", ()=>{
   etfs.push({name:"새 종목", code:"", weight:0}); save(); render();
 });
 document.getElementById("resetBtn").addEventListener("click", ()=>{
-  if(!confirm("종목 목록을 기본값으로 되돌릴까요?")) return;
-  etfs = DEFAULT_ETFS.map(x=>({...x})); prices = {}; qtys = {}; save(); render();
+  if(!confirm(ACCOUNT_LABEL[data.active] + " 종목 목록을 기본값으로 되돌릴까요?")) return;
+  etfs = DEFAULT_BY_ACCOUNT[data.active].map(x=>({...x}));
+  prices = {}; qtys = {};
+  save(); render();
 });
 
 (function init(){
@@ -407,6 +522,7 @@ document.getElementById("resetBtn").addEventListener("click", ()=>{
   const d = new Date();
   document.getElementById("targetMonth").value = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
   document.getElementById("priceDate").value = buyDateFor(0);
+  updateTabs();
   render();
   loadMarket();
 })();
