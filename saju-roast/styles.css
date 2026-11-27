@@ -293,6 +293,14 @@ table.wonkuk tr.row-gz td.g-day { background: rgba(225, 29, 72, .12); border-col
 .cond ul { margin: 0; padding-left: 15px; font-size: 12.5px; color: #ded2da; }
 .cond li { margin: 4px 0; }
 
+.concern-block {
+  text-align: left; margin-top: 14px; border: 1px solid rgba(230, 181, 103, .35);
+  background: rgba(230, 181, 103, .06); border-radius: 12px; padding: 11px 12px;
+}
+.cb-h { font-size: 12px; font-weight: 800; color: var(--gold); margin-bottom: 6px; }
+.concern-block ul { margin: 0; padding-left: 16px; font-size: 12.8px; color: #e6dae2; }
+.concern-block li { margin: 4px 0; }
+
 /* insight blocks */
 .insight {
   border: 1px solid var(--line); border-left: 3px solid var(--crimson2);

@@ -176,7 +176,8 @@
     var concernHtml = '';
     if (chart.input.concern && chart.input.concern !== '종합') {
       var map = { '성격': 'personality', '연애': 'love', '직업·재물': 'work', '대운·세운': 'daewoon' };
-      concernHtml = '<div class="hint" style="margin-top:10px">요청 영역: <b>' + chart.input.concern + '</b> — <a href="#' + (map[chart.input.concern] || 'wonkuk') + '" style="color:#e6b567">해당 섹션</a>을 먼저 보세요.</div>';
+      var cs = SajuAnalysis.concernSummary ? SajuAnalysis.concernSummary(chart) : '';
+      concernHtml = (cs || '') + '<div class="hint" style="margin-top:8px">요청 영역: <b>' + chart.input.concern + '</b> — 전체 해석은 <a href="#' + (map[chart.input.concern] || 'wonkuk') + '" style="color:#e6b567">해당 섹션</a>에서 이어집니다.</div>';
     }
 
     $sum.innerHTML =

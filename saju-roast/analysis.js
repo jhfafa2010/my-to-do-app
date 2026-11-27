@@ -1083,6 +1083,28 @@
       score: 66, strength: '보통'
     });
 
+    if (cls['식상'] > total * 0.28) list.push({
+      title: '식상 과다 — 말과 재주가 앞서는 구조',
+      basis: '식상이 ' + pct(cls['식상'] / total * 100) + '%로 과다합니다. ' + TEN_GOD_PROFILE['상관'].over,
+      behavior: '재능은 분명한데 전달 방식이 거칠어, 맞는 말을 해도 사람이 상처를 입고 떠납니다.',
+      roast: roastPick(chart, '같은 내용도 순서를 바꾸면 훨씬 잘 들어갑니다.',
+        '당신은 말이 세다는 소리를 듣는다. 그건 솔직함이 아니라 조절 실패다.',
+        '당신은 "할 말은 해야 한다"고 믿는다. 해야 할 말과 하지 말아야 할 말을 구분하는 게 먼저다.'),
+      score: 70, strength: '높음'
+    });
+
+    if (st.ratio < 0.45 && cls['비겁'] < total * 0.20) {
+      list.push({
+        title: '신약 — 밀어붙이는 힘이 약한 구조',
+        basis: '일간을 돕는 세력이 ' + pct(st.ratio * 100) + '%로 약합니다. ' + TEN_GOD_PROFILE['정관'].over,
+        behavior: '결정을 미루고, 남이 정해 준 방향에서 편안함을 느낍니다. 그 편안함이 기회를 놓치게 합니다.',
+        roast: roastPick(chart, '작은 결정부터 48시간 안에 끝내는 연습을 해 보세요.',
+          '당신은 신중함을 이유로 결정을 남에게 넘긴다. 그 결과는 신중이 아니라 무책임이다.',
+          '당신은 평생 좋은 사람이 되려고 자기 결정을 포기했다. 그 대가는 아무도 대신 치러 주지 않는다.'),
+        score: 64, strength: '보통'
+      });
+    }
+
     chart.sinsal.list.forEach(function (s) {
       if (s.name === '귀문관살') list.push({
         title: '귀문관살 — 촉이 의심으로 바뀌는 자리',
@@ -1409,8 +1431,44 @@
     };
   }
 
+  function concernSummary(chart) {
+    var c = chart.input.concern || '종합';
+    var p = chart.pillars, st = chart.strength, y = chart.yongsin;
+    var cls = pcls(chart), total = st.total, sp = STEM_PROFILE[p.day.gan];
+    var out = null;
+    if (c === '성격') {
+      out = '<div class="concern-block"><div class="cb-h">성격 — 먼저 볼 세 가지</div><ul>' +
+        '<li>겉은 <b>' + p.month.tenGodGan + '</b>, 속은 <b>' + p.day.tenGodZhi + '</b> — ' + SP_TG_BEHAVIOR[p.month.tenGodGan] + '</li>' +
+        '<li>가장 강한 기운은 <b>' + dominantTenGod(chart.counts.detail) + '</b>, 가장 큰 약점은 <b>' + elRank(chart)[4].el + '</b> 부족</li>' +
+        '<li>일간 ' + p.day.gan + '(' + sp.image + ')는 ' + sp.strengths[0] + '이 강하고, ' + sp.weaknesses[0] + '이 약점</li>' +
+        '</ul></div>';
+    } else if (c === '연애') {
+      var isMale = chart.input.gender !== 'F';
+      out = '<div class="concern-block"><div class="cb-h">연애 — 먼저 볼 세 가지</div><ul>' +
+        '<li>배우자궁(일지) <b>' + p.day.zhi + '(' + p.day.tenGodZhi + ')</b>' + (chart.relations.some(function (r) { return r.pos.indexOf('day') >= 0 && r.kind === '충'; }) ? ' — 충이 걸려 있어 가까운 관계에서 같은 갈등이 반복됩니다' : ' — 직접적인 충은 없어 비교적 안정적입니다') + '</li>' +
+        '<li>배우자성(' + (isMale ? '재성' : '관성') + ') 세력 <b>' + pct(cls[isMale ? '재성' : '관성'] / total * 100) + '%</b> — ' + (cls[isMale ? '재성' : '관성'] > total * 0.25 ? '인연은 많지만 선택이 어렵습니다' : cls[isMale ? '재성' : '관성'] < total * 0.10 ? '먼저 다가가지 않아 인연을 놓치기 쉽습니다' : '무난하지만 결정이 늦습니다') + '</li>' +
+        '<li>신살: ' + (chart.sinsal.list.map(function (x) { return x.name; }).join('·') || '없음') + ' — 관계의 패턴이 여기서 드러납니다</li>' +
+        '</ul></div>';
+    } else if (c === '직업·재물') {
+      out = '<div class="concern-block"><div class="cb-h">직업·재물 — 먼저 볼 세 가지</div><ul>' +
+        '<li>재성 <b>' + pct(cls['재성'] / total * 100) + '%</b> · 관성 <b>' + pct(cls['관성'] / total * 100) + '%</b> · 식상 <b>' + pct(cls['식상'] / total * 100) + '%</b> — ' + (cls['재성'] < total * 0.10 ? '돈을 쫓기보다 실력으로 인정받는 쪽이 맞습니다' : '돈의 흐름은 있으나 관리 구조가 관건입니다') + '</li>' +
+        '<li>조직 vs 독립: ' + (cls['관성'] / total * 100 + (st.ratio >= 0.52 ? -5 : 5) > cls['식상'] / total * 100 + cls['비겁'] / total * 100 ? '조직에서 역할이 분명할 때 유리' : '자기 판을 만드는 쪽이 유리') + '</li>' +
+        '<li>용신 <b>' + y.yongsin + '</b> 방향으로 일하는 방식이 성과를 만듭니다 — ' + ELEMENT_PROFILE[y.yongsin].adv + '</li>' +
+        '</ul></div>';
+    } else if (c === '대운·세운') {
+      var cur = chart.currentDaewoon;
+      out = '<div class="concern-block"><div class="cb-h">대운·세운 — 먼저 볼 세 가지</div><ul>' +
+        '<li>대운 ' + chart.daewoon.dirLabel + ', 기산 ' + chart.daewoon.startAge.years + '세 ' + (chart.daewoon.startAge.months || 0) + '개월</li>' +
+        '<li>현재 대운 <b>' + (cur && !cur.preStart ? cur.gz + ' (' + cur.fromAge + '~' + cur.toAge + '세)' : '아직 시작 전') + '</b>' + (cur && !cur.preStart ? ' — ' + cur.tenGod + ', ' + cur.favor : '') + '</li>' +
+        '<li>' + chart.seun.thisYear.year + '년 세운 <b>' + chart.seun.thisYear.gz + '</b> (' + chart.seun.thisYear.tenGod + ', ' + chart.seun.thisYear.favor + ')' + (chart.seun.thisYear.rels.length ? ' — ' + chart.seun.thisYear.rels.join(', ') : '') + '</li>' +
+        '</ul></div>';
+    }
+    return out;
+  }
+
   root.SajuAnalysis = {
     build: build,
+    concernSummary: concernSummary,
     STEM_PROFILE: STEM_PROFILE,
     painCandidates: painCandidates
   };
