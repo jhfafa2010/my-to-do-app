@@ -178,7 +178,7 @@ input[type=range]::-moz-range-thumb {
 }
 .nav a:hover { color: #fff; border-color: var(--crimson); }
 
-.sec { padding: 18px 15px 8px; }
+.sec { padding: 18px 15px 8px; scroll-margin-top: 62px; }
 .sec h2 {
   font-size: 19px; margin: 0 0 14px; line-height: 1.4; font-weight: 800;
   display: flex; align-items: baseline; gap: 9px;
@@ -379,8 +379,8 @@ table.wonkuk tr.row-gz td.g-day { background: rgba(225, 29, 72, .12); border-col
   width: 24px; height: 24px; border-radius: 8px; background: var(--crimson); color: #fff;
   display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800;
 }
-.pain-title { font-size: 14px; font-weight: 700; color: #fff; flex: 1; }
-.strength-badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line2); }
+.pain-title { font-size: 14px; font-weight: 700; color: #fff; flex: 1; min-width: 0; }
+.strength-badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line2); flex: 0 0 auto; white-space: nowrap; }
 .sb-높음 { color: #ff9db0; border-color: rgba(225,29,72,.5); }
 .sb-보통 { color: var(--gold); border-color: rgba(230,181,103,.4); }
 .sb-낮음 { color: var(--dim); }
