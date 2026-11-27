@@ -47,6 +47,7 @@ body {
   border: 1px solid rgba(225, 29, 72, .45); border-radius: 999px; padding: 4px 12px;
   background: rgba(225, 29, 72, .08); font-weight: 700;
 }
+.hero-emoji { font-size: 34px; line-height: 1; margin-top: 10px; }
 h1.hero-title {
   font-size: clamp(24px, 7vw, 34px); margin: 12px 0 6px; line-height: 1.25;
   background: linear-gradient(180deg, #fff 0%, #ffd9e4 60%, #e11d48 130%);
@@ -416,8 +417,8 @@ table.wonkuk tr.row-gz td.g-day { background: rgba(225, 29, 72, .12); border-col
   background: linear-gradient(180deg, rgba(10,9,16,.4), rgba(10,9,16,.98) 40%);
   display: flex; gap: 8px; z-index: 40;
 }
-.actionbar .btn { padding: 13px 8px; font-size: 13.5px; }
-.actionbar .btn-primary { flex: 1.4; }
+.actionbar .btn { width: auto; flex: 1 1 0; padding: 12px 6px; font-size: 13px; white-space: nowrap; min-width: 0; }
+.actionbar .btn-primary { flex: 1.9 1 0; }
 
 .toast {
   position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(10px);

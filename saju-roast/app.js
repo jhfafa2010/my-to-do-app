@@ -203,7 +203,9 @@
     $('disclaimer').innerHTML = '⚠️ ' + out.disclaimer + '<br><br>만세력 계산: lunar-javascript(寿星天文历 기반, MIT 라이선스)를 저장소에 함께 넣어 오프라인에서도 동작합니다. 표준시·서머타임 이력은 IANA tz database(Asia/Seoul)를 따랐습니다.';
     $('result').classList.add('on');
     $('actionbar').style.display = 'flex';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    var target = $('result');
+    var y = target.getBoundingClientRect().top + window.pageYOffset - 8;
+    window.scrollTo({ top: y, behavior: 'smooth' });
   }
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
