@@ -958,7 +958,7 @@
     var sy = chart.seun.thisYear;
     out += '<h3>' + sy.year + '년 세운 — ' + sy.gz + '</h3>';
     out += '<div class="seun-head"><span class="seun-gz">' + sy.gz + '</span><span class="tg ' + TG_CLS_COLOR[E.tenGodClass(sy.tenGod)] + '">' + sy.tenGod + '</span><span class="favor favor-' + sy.favor + '">' + sy.favor + '</span></div>';
-    out += '<p class="body">올해 천간 ' + sy.gan + '은 일간에게 ' + sy.tenGod + '으로 작동하고, 오행 ' + sy.el + '은 ' + sy.favor + '입니다.' +
+    out += '<p class="body">올해 천간 ' + sy.gan + '은 일간에게 ' + sy.tenGod + '으로 작동하고, 올해의 오행은 ' + sy.el + ' — ' + sy.favor + '입니다.' +
       (sy.rels.length ? ' 지지 ' + sy.zhi + ' 쪽이 ' + sy.rels.join(', ') + '이라 그 자리가 흔들립니다.' : '') + '</p>';
     out += ins(chart,
       '세운 ' + sy.gz + ' — 원국과 ' + (sy.rels.length ? sy.rels.join('·') + '의 관계를 맺습니다' : '직접적인 충·합 없이 지나갑니다') + '. ' + sy.tenGod + '의 성질이 1년간 전면에 나옵니다.',
