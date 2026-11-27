@@ -62,7 +62,7 @@
     $('city').addEventListener('change', function () {
       $('customLonWrap').style.display = this.value === 'custom' ? 'block' : 'none';
     });
-    $('roast').addEventListener('input', function () {
+    $('roastInput').addEventListener('input', function () {
       var v = +this.value;
       $('roastNum').textContent = v;
       $('roastLabel').textContent = v <= 3 ? '순한맛' : v <= 6 ? '중간맛' : v <= 8 ? '매운맛' : 'HARD ROAST';
@@ -135,7 +135,7 @@
       applyTrueSolarToDay: $('applyDay').checked,
       jaSiRule: $('jaSi').value,
       concern: $('concern').value,
-      roast: +$('roast').value
+      roast: +$('roastInput').value
     };
   }
 
@@ -259,7 +259,7 @@
     $('applyDay').checked = !!input.applyTrueSolarToDay;
     $('jaSi').value = input.jaSiRule || 'jo';
     $('concern').value = input.concern || '종합';
-    $('roast').value = input.roast || 10;
+    $('roastInput').value = input.roast || 10;
     $('roastNum').textContent = input.roast || 10;
     $('roastLabel').textContent = (input.roast || 10) <= 3 ? '순한맛' : (input.roast || 10) <= 6 ? '중간맛' : (input.roast || 10) <= 8 ? '매운맛' : 'HARD ROAST';
     analyze();
@@ -285,7 +285,7 @@
     $('applyDay').checked = false;
     $('jaSi').value = 'jo';
     $('concern').value = '종합';
-    $('roast').value = 10;
+    $('roastInput').value = 10;
     $('roastNum').textContent = '10';
     $('roastLabel').textContent = 'HARD ROAST';
     $('err').textContent = '';

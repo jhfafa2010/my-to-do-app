@@ -218,6 +218,7 @@ table.wonkuk td .hanja { display: block; font-size: 21px; font-weight: 700; line
 table.wonkuk td .hangul { display: block; font-size: 10px; color: var(--dim); margin-top: 1px; }
 table.wonkuk tr.row-gz td.g-day { background: rgba(225, 29, 72, .12); border-color: rgba(225, 29, 72, .35); }
 .tg { font-size: 11px; padding: 2px 7px; border-radius: 999px; display: inline-block; }
+.tg.ilgan { color: #fff; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255,255,255,.3); }
 .tg.bigeop { color: #ffb0c4; background: rgba(225, 29, 72, .15); }
 .tg.siksang { color: #ffd79a; background: rgba(230, 181, 103, .14); }
 .tg.jaeseong { color: #9fe6c6; background: rgba(78, 201, 160, .13); }

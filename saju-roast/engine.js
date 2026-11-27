@@ -742,7 +742,7 @@
     var jieAll = collectJieQi(instantMs);
     var jieList = jieAll.filter(function (t) { return JIE_ORDER.indexOf(t.name) >= 0; });
     var prevJie = null, nextJie = null;
-    jieAll.forEach(function (t) {
+    jieList.forEach(function (t) {
       if (t.ms <= instantMs) prevJie = t;
       else if (!nextJie) nextJie = t;
     });

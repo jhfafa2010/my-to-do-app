@@ -382,7 +382,7 @@
     html += '<tr class="row-tg"><th>십성</th>';
     order.forEach(function (k) {
       var t = k === 'day' ? '일간' : p[k].tenGodGan;
-      html += '<td><span class="tg ' + TG_CLS_COLOR[E.tenGodClass(t) === '비겁' && t === '일간' ? '비겁' : E.tenGodClass(t)] + '">' + t + '</span></td>';
+      html += '<td><span class="tg ' + (t === '일간' ? 'ilgan' : TG_CLS_COLOR[E.tenGodClass(t)]) + '">' + t + '</span></td>';
     });
     html += '</tr>';
 
