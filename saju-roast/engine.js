@@ -539,7 +539,9 @@
         { el: gwan, cls: '관성', s: sc(gwan) }
       ].sort(function (a, b) { return b.s - a.s; });
       yong = cands[0].el;
-      hui = cands[1].el;
+      /* 희신: 용신의 작용을 이어 주는 오행 (식상→재성, 재성→식상, 관성→재성) */
+      var huiMap = { '식상': jae, '재성': sik, '관성': jae };
+      hui = huiMap[cands[0].cls] || cands[1].el;
       gi = sc(inEl) >= sc(dayEl) ? inEl : dayEl;
       method = '억부용신 (신강 → 설기·극제)';
       reason = '일간 ' + dayStem + '(' + dayEl + ') 세력이 ' + Math.round(strength.ratio * 100) + '%로 강해, 같은 편을 더 키우면 과잉이다. ' + cands.map(function (c) {

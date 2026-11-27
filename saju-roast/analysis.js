@@ -501,7 +501,7 @@
 
   function strengthNarrative(chart) {
     var st = chart.strength, dm = chart.dayMaster;
-    var s = '일간 ' + dm.stem + '(' + dm.el + ')을 돕는 세력을 천간·지지·지장간까지 가중해 계산하면 ' + pct(st.ratio * 100) + '%입니다. ';
+    var s = '일간 ' + dm.stem + '(' + dm.el + ') 기준으로 나를 돕는 세력을 천간·지지·지장간까지 가중해 계산하면 ' + pct(st.ratio * 100) + '%입니다. ';
     if (st.level === '극신강') s += '이건 거의 "내 힘으로 다 해결하려는" 구조입니다. 주변의 도움을 받아들이는 통로가 좁습니다.';
     else if (st.level === '신강') s += '자기 힘이 남보다 우세한 구조로, 밀어붙이면 대개 원하는 데까지 갑니다. 문제는 멈추는 법입니다.';
     else if (st.level === '중화') s += '어느 쪽으로도 치우치지 않은 균형 구조입니다. 대신 스스로 방향을 정하지 않으면 주변에 끌려갑니다.';
@@ -525,7 +525,7 @@
     if (st.score[y.yongsin] > st.total * 0.18) good.push('용신 ' + y.yongsin + '이 원국에 실질적으로 존재해, 그 방향으로 움직일 때 성과가 난다');
     else bad.push('용신 ' + y.yongsin + '의 힘이 원국에 약해, 의식적으로 보충하지 않으면 성과가 더디다');
 
-    if (missingEls(chart).length) bad.push('원국에 ' + missingEls(chart).join('·') + ' 기운이 거의 없다 — 그 영역의 감각을 후천적으로 배워야 한다');
+    if (missingEls(chart).length) bad.push('원국에 ' + missingEls(chart).join('·') + ' 기운이 거의 없다 — 그 영역의 감각은 후천적으로 배워야 한다');
     if (chart.relations.filter(function (r) { return r.kind === '충'; }).length) bad.push('충이 ' + chart.relations.filter(function (r) { return r.kind === '충'; }).length + '개 있어 인생의 전환점마다 자리가 한 번씩 바뀐다');
     if (chart.relations.filter(function (r) { return r.kind === '합'; }).length) good.push('합이 있어 사람과 자리가 묶여주는 복이 있다 — 인연이 끊겨도 다시 이어진다');
     if (rank[0].v > st.total * 0.30) bad.push(rank[0].el + ' 기운이 ' + pct(rank[0].v / st.total * 100) + '%로 과다해, 판단이 그쪽으로 쏠린다');
@@ -569,7 +569,7 @@
     var chungN = chart.relations.filter(function (r) { return r.kind === '충'; }).length;
     var hyungN = chart.relations.filter(function (r) { return r.kind === '형'; }).length;
     out += ins(chart,
-      (chungN ? '원국에 충이 ' + chungN + '개' : '충은 없고') + (hyungN ? ', 형이 ' + hyungN + '개' : '') + ' 있습니다. 일간 ' + sp.image + '의 기질과 겹쳐 보면 스트레스 반응이 이렇게 나옵니다. ' + sp.stress,
+      (chungN ? '원국에 충이 ' + chungN + '개' : '충은 없고') + (hyungN ? ', 형이 ' + hyungN + '개' : '') + ' 있습니다. 일간 ' + p.day.gan + '(' + sp.image + ') 기질과 겹쳐 보면 스트레스 반응이 이렇게 나옵니다. ' + sp.stress,
       chungN >= 2 ? '문제가 생기면 환경을 바꾸는 쪽으로 먼저 움직입니다(이직·이사·관계 정리). 그게 해결처럼 느껴지지만 같은 패턴이 다시 옵니다.'
         : '문제를 안고도 자리를 지키려 합니다. 그만큼 안에서 삭이는 시간이 깁니다.',
       roastPick(chart,
@@ -835,7 +835,7 @@
     /* 3. 성과 방해 습관 */
     out += ins(chart,
       '용신은 ' + y.yongsin + ', 기신은 ' + y.gisin + '입니다. 성과가 나는 방향과 막히는 방향이 이 둘로 갈립니다.',
-      '기신 ' + y.gisin + '이 강해지는 상황(' + gisinSituation(y.gisin) + ')에서 일이 자주 꼬입니다.',
+      '기신 ' + y.gisin + ' 기운이 강해지는 상황(' + gisinSituation(y.gisin) + ')에서 일이 자주 꼬입니다.',
       roastPick(chart,
         '기신이 강해지는 상황을 미리 피하는 것만으로 절반은 해결돼요.',
         '당신은 잘 풀릴 때 방심하고, 그 방심이 다음 위기의 씨앗이 된다.',
@@ -938,9 +938,9 @@
     if (cur && !cur.preStart) {
       var curTg = TEN_GOD_PROFILE[cur.tenGod] || {};
       out += '<h3>현재 대운 — ' + cur.gz + ' (' + cur.fromAge + '~' + cur.toAge + '세)</h3>';
-      out += '<p class="body">' + curTg.one + ' 이 10년은 이 기질이 전면에 나오는 구간입니다.</p>';
+      out += '<p class="body">' + curTg.one + '. 이 10년은 이 기질이 전면에 나오는 구간입니다.</p>';
       out += ins(chart,
-        '대운 ' + cur.gz + '의 천간 ' + cur.gan + '은 일간에게 ' + cur.tenGod + ', 지지 ' + cur.zhi + '는 ' + (chart.pillars.day ? E.tenGod(chart.pillars.day.gan, E.HIDDEN[cur.zhi][E.HIDDEN[cur.zhi].length - 1][0]) : '') + '입니다. 대운의 오행 ' + cur.el + '은 ' + cur.favor + '에 해당합니다.',
+        '대운 ' + cur.gz + '의 천간 ' + cur.gan + '은 일간에게 ' + cur.tenGod + ', 지지 ' + cur.zhi + ' 쪽은 ' + (chart.pillars.day ? E.tenGod(chart.pillars.day.gan, E.HIDDEN[cur.zhi][E.HIDDEN[cur.zhi].length - 1][0]) : '') + '입니다. 대운의 오행은 ' + cur.el + ' — ' + cur.favor + '에 해당합니다.',
         cur.favor === '용신' || cur.favor === '희신'
           ? '이 10년은 밀어붙이면 성과가 나는 구간입니다. 다만 잘될 때 확장을 멈추지 않으면 다음 대운에서 정리해야 합니다.'
           : cur.favor === '기신'
@@ -959,9 +959,9 @@
     out += '<h3>' + sy.year + '년 세운 — ' + sy.gz + '</h3>';
     out += '<div class="seun-head"><span class="seun-gz">' + sy.gz + '</span><span class="tg ' + TG_CLS_COLOR[E.tenGodClass(sy.tenGod)] + '">' + sy.tenGod + '</span><span class="favor favor-' + sy.favor + '">' + sy.favor + '</span></div>';
     out += '<p class="body">올해 천간 ' + sy.gan + '은 일간에게 ' + sy.tenGod + '으로 작동하고, 오행 ' + sy.el + '은 ' + sy.favor + '입니다.' +
-      (sy.rels.length ? ' 지지 ' + sy.zhi + '이 ' + sy.rels.join(', ') + '이라 그 자리가 흔들립니다.' : '') + '</p>';
+      (sy.rels.length ? ' 지지 ' + sy.zhi + ' 쪽이 ' + sy.rels.join(', ') + '이라 그 자리가 흔들립니다.' : '') + '</p>';
     out += ins(chart,
-      '세운 ' + sy.gz + '은 원국과 ' + (sy.rels.length ? sy.rels.join('·') + '의 관계를 맺습니다' : '직접적인 충·합 없이 지나갑니다') + '. ' + sy.tenGod + '의 성질이 1년간 전면에 나옵니다.',
+      '세운 ' + sy.gz + ' — 원국과 ' + (sy.rels.length ? sy.rels.join('·') + '의 관계를 맺습니다' : '직접적인 충·합 없이 지나갑니다') + '. ' + sy.tenGod + '의 성질이 1년간 전면에 나옵니다.',
       sy.tenGod === '편관' || sy.tenGod === '정관' ? '올해는 압박·평가·책임이 커지는 해입니다. 직장·계약·시험처럼 "심사받는 일"이 몰립니다.'
         : sy.tenGod === '편재' || sy.tenGod === '정재' ? '올해는 돈이 실제로 움직이는 해입니다. 수입·지출·투자 결정이 몰리고, 그 결정이 3년을 좌우합니다.'
           : sy.tenGod === '식신' || sy.tenGod === '상관' ? '올해는 말과 결과물이 밖으로 나가는 해입니다. 시작한 것을 세상에 내놓기 좋습니다.'
@@ -1346,21 +1346,33 @@
   function actions(chart) {
     var y = chart.yongsin, list = [];
     list.push('용신 ' + y.yongsin + '을 일상에 넣기 — ' + ELEMENT_PROFILE[y.yongsin].adv);
-    list.push('기신 ' + y.gisin + '이 강해지는 상황을 피하기 — ' + gisinSituation(y.gisin) + '를 피하는 규칙 하나 정하기');
+    list.push('기신 ' + y.gisin + ' 기운이 강해지는 상황을 피하기 — ' + gisinSituation(y.gisin) + '를 피하는 규칙 하나 정하기');
     list.push('결정 기한을 정하는 습관 — 중요한 결정은 72시간 안에 결론, 이후엔 뒤집지 않기');
     list.push('관계에서 감정이 올라온 날엔 결론을 말하지 않기 — 24시간 뒤에 한 문장으로 말하기');
     list.push('매달 한 번, 이번 달에 한 일을 세 줄로 적기 — 식상이 약한 사주는 기록이 곧 표현이다');
     return list;
   }
 
+  var ONE_LINE = {
+    '甲': '당신은 유연함을 배신으로 착각하는 사람이다',
+    '乙': '당신은 괜찮다는 말로 계산서를 쌓는 사람이다',
+    '丙': '당신은 무대가 비면 불안해서 조명을 직접 드는 사람이다',
+    '丁': '당신은 말 안 해도 안다고 믿다가 혼자 실망하는 사람이다',
+    '戊': '당신은 결정을 미루면서 그것을 안정이라고 부르는 사람이다',
+    '己': '당신은 배려라는 이름으로 계산서를 쓰고 청구서는 보내지 않는 사람이다',
+    '庚': '당신은 사람을 자르는 것을 결단력이라고 부르는 사람이다',
+    '辛': '당신은 품위를 지키느라 인연을 직접 잘라내는 사람이다',
+    '壬': '당신은 새로 시작하는 것을 진보라고 믿는 사람이다',
+    '癸': '당신은 파도가 올까 봐 평생 해변에 서 있는 사람이다'
+  };
+
   function oneLine(chart) {
-    var sp = STEM_PROFILE[chart.pillars.day.gan];
-    var r = tone(chart);
     var core = chart.strength.ratio >= 0.55 ? '힘은 충분한데 방향을 남에게 물어본다' : '방향은 아는데 힘을 남에게 빌리려 한다';
-    var high = sp.roast.high;
-    var mid = sp.roast.mid;
-    var low = sp.roast.low;
-    return roastPick(chart, low, mid, high + ' ' + core + '.');
+    var punch = ONE_LINE[chart.pillars.day.gan] || '자기 방식을 의심하지 않는 사람이다';
+    var r = tone(chart);
+    if (r <= 3) return '지금 습관 하나만 바꾸면 훨씬 편해지는 사람 — ' + core + '.';
+    if (r <= 6) return punch + ' — ' + core + '.';
+    return punch + ' — ' + core + '. 그 둘이 같은 곳에서 나온다는 걸 알면, 바꿀 곳도 하나로 줄어든다.';
   }
 
   /* ============================================================ 조립 */
