@@ -133,6 +133,7 @@ button.pill:active{transform:translateY(0) scale(.985)}
 }
 
 /* ── 오피스 무대 ──────────────────────── */
+.layout{display:block}
 .stage{
   margin:0;
   padding:10px 10px 6px;
@@ -783,6 +784,24 @@ body.motion-on .heart__dot{animation:dotPulse 2s ease-out infinite}
 @media (max-width:360px){
   .badge{font-size:9px;padding:4px 7px 4px 6px;gap:3px}
   .badge__ico{display:none}
+}
+
+/* ── 데스크톱 2단 ─────────────────────── */
+@media (min-width:1000px){
+  .page{max-width:1180px}
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 344px;
+    gap:16px;
+    align-items:start;
+  }
+  .parts{
+    margin-top:0;
+    position:sticky;
+    top:20px;
+  }
+  .part{padding:11px 12px}
+  .masthead__title{font-size:29px}
 }
 
 /* ── 데스크톱: 가운데 모달 ────────────── */
