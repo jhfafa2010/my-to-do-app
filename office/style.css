@@ -178,7 +178,7 @@ body.motion-on .office::after{animation:sweep 11s ease-in-out 2s infinite}
 .hot{
   position:absolute;
   left:var(--x);top:var(--y);
-  width:19%;
+  width:15%;
   aspect-ratio:1;
   transform:translate(-50%,-50%);
   z-index:2;
@@ -189,10 +189,10 @@ body.motion-on .office::after{animation:sweep 11s ease-in-out 2s infinite}
 .hot::before{
   content:"";
   position:absolute;
-  inset:-10%;
+  inset:-6%;
   border-radius:50%;
-  background:radial-gradient(circle at 50% 50%,rgba(52,211,153,.42) 0%,rgba(52,211,153,.18) 42%,rgba(52,211,153,0) 70%);
-  filter:blur(6px);
+  background:radial-gradient(circle at 50% 50%,rgba(45,212,191,.20) 0%,rgba(45,212,191,.07) 45%,rgba(45,212,191,0) 72%);
+  filter:blur(12px);
   animation:breathe 4.6s ease-in-out infinite;
 }
 .hot i{
@@ -211,8 +211,8 @@ body.motion-on .hot{opacity:1}
 body.motion-on .hot i{opacity:1}
 
 @keyframes breathe{
-  0%,100%{opacity:.55;transform:scale(.94)}
-  50%{opacity:1;transform:scale(1.06)}
+  0%,100%{opacity:.38;transform:scale(.92)}
+  50%{opacity:.8;transform:scale(1.05)}
 }
 @keyframes rise{
   0%{transform:translate(-50%,0) scale(.7);opacity:0}
