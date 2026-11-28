@@ -768,7 +768,7 @@ body.motion-on .heart__dot{animation:dotPulse 2s ease-out infinite}
   .badge__ico{font-size:10.5px}
   .tx-long{display:none}
   .tx-short{display:inline}
-  .hot{width:19%}
+  .hot{width:15%}
   .hot i{width:4px;height:4px}
   .parts{margin-top:12px;border-radius:22px}
   .part{padding:9px 10px;gap:10px}
@@ -802,6 +802,7 @@ body.motion-on .heart__dot{animation:dotPulse 2s ease-out infinite}
   }
   .part{padding:11px 12px}
   .masthead__title{font-size:29px}
+  .badge{font-size:12px;padding:7px 12px 7px 10px;gap:6px}
 }
 
 /* ── 데스크톱: 가운데 모달 ────────────── */
