@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>숲이의 3D 지휘실</title>
+<meta name="description" content="매일 조용히 돌아가는 자동화 파트를 한눈에 보는 3D 아이소메트릭 지휘실 대시보드.">
+<meta name="theme-color" content="#f4f5f8">
+<meta property="og:title" content="숲이의 3D 지휘실">
+<meta property="og:description" content="아침 브리핑부터 ETF 종가 갱신까지, 조용히 돌아가는 5개 파트.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="motion-on">
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="masthead__kicker">AI 지휘실</p>
+    <h1 class="masthead__title">숲이의 지휘실</h1>
+    <p class="masthead__sub"><span id="todayLabel">오늘</span> · 조용히 돌아가는 중</p>
+  </header>
+
+  <div class="topbar" role="toolbar" aria-label="상태 바">
+    <button class="pill pill--toggle is-on" id="motionBtn" type="button" aria-pressed="true" aria-label="모션 효과 켜기 또는 끄기">
+      <span class="pill__dot"></span><span id="motionLabel">모션 ON</span>
+    </button>
+    <div class="pill" aria-label="가동 중인 파트 수">
+      <span class="pill__dot pill__dot--soft"></span>가동 <b id="partCount">5</b>파트
+    </div>
+    <button class="pill pill--lv" id="levelBtn" type="button" aria-haspopup="dialog">
+      <span class="lv">Lv.3</span> 숲이
+    </button>
+  </div>
+
+  <main class="stage" aria-label="지휘실 평면도">
+    <div class="office" id="office">
+      <img class="office__bg" src="office-bg.webp" width="1402" height="1122" draggable="false"
+           alt="둥근 보라색 마스코트가 앉은 원목 책상, 유리로 나뉜 회의실, 토끼·곰·병아리 책상, 소파와 러그가 있는 라운지로 이루어진 아이소메트릭 사무실">
+
+      <span class="hot" data-room="hq"     style="--x:58%;--y:27%" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="hot" data-room="shop"   style="--x:71%;--y:50%" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="hot" data-room="invest" style="--x:50%;--y:63%" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="hot" data-room="life"   style="--x:21%;--y:53%" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="hot" data-room="lab"    style="--x:21%;--y:37%" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="hot" data-room="lounge" style="--x:82%;--y:71%" aria-hidden="true"><i></i><i></i><i></i></span>
+
+      <button class="badge" type="button" data-room="hq" style="--x:58%;--y:42%">
+        <span class="badge__dot"></span><span class="badge__ico">👑</span>
+        <span class="badge__tx"><span class="tx-long">지휘실</span><span class="tx-short">지휘실</span></span>
+      </button>
+      <button class="badge" type="button" data-room="shop" style="--x:70%;--y:58.5%">
+        <span class="badge__dot"></span><span class="badge__ico">🪙</span>
+        <span class="badge__tx"><span class="tx-long">포인트·쇼핑</span><span class="tx-short">포인트</span></span>
+      </button>
+      <button class="badge" type="button" data-room="invest" style="--x:46%;--y:71.5%">
+        <span class="badge__dot"></span><span class="badge__ico">📈</span>
+        <span class="badge__tx"><span class="tx-long">투자·ETF</span><span class="tx-short">투자</span></span>
+      </button>
+      <button class="badge" type="button" data-room="life" style="--x:17%;--y:64%">
+        <span class="badge__dot"></span><span class="badge__ico">🌙</span>
+        <span class="badge__tx"><span class="tx-long">생활·기록</span><span class="tx-short">기록</span></span>
+      </button>
+      <button class="badge" type="button" data-room="lab" style="--x:20%;--y:44%">
+        <span class="badge__dot"></span><span class="badge__ico">🧪</span>
+        <span class="badge__tx"><span class="tx-long">연구소·프로젝트</span><span class="tx-short">연구소</span></span>
+      </button>
+      <button class="badge badge--rest" type="button" data-room="lounge" style="--x:81%;--y:85%">
+        <span class="badge__dot"></span><span class="badge__ico">🛋️</span>
+        <span class="badge__tx"><span class="tx-long">라운지</span><span class="tx-short">라운지</span></span>
+      </button>
+    </div>
+    <p class="stage__hint">방을 탭하면 자세히 볼 수 있어요</p>
+  </main>
+
+  <footer class="foot">
+    <nav class="foot__links" aria-label="바로가기">
+      <a href="../etf-calc/">ETF 계산기</a>
+      <span aria-hidden="true">·</span>
+      <a href="../saju-roast/">사주 HARD ROAST</a>
+    </nav>
+    <p class="foot__note">숲이의 지휘실 · 개인정보 없이 만든 공개 데모</p>
+  </footer>
+
+</div>
+
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="sheetTitle" tabindex="-1">
+  <div class="sheet__grab" id="sheetGrab" aria-hidden="true"></div>
+  <header class="sheet__head">
+    <span class="sheet__ico" id="sheetIco">👑</span>
+    <div class="sheet__tt">
+      <h2 id="sheetTitle">지휘실</h2>
+      <p id="sheetSub">메인 비서 숲이</p>
+    </div>
+    <button class="sheet__close" id="sheetClose" type="button" aria-label="닫기">✕</button>
+  </header>
+  <div class="sheet__body" id="sheetBody"></div>
+</section>
+
+<noscript>
+  <p class="noscript">이 페이지는 자바스크립트가 켜져 있을 때 제대로 보여요.</p>
+</noscript>
+
+<script src="app.js"></script>
+</body>
+</html>
