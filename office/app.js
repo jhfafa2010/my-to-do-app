@@ -267,7 +267,7 @@
     document.body.classList.remove('sheet-open');
   }
 
-  $$('.badge').forEach((btn) => {
+  $$('.badge, .part').forEach((btn) => {
     btn.addEventListener('click', () => openSheet(btn.dataset.room));
   });
   $('#levelBtn').addEventListener('click', () => openSheet('brief'));

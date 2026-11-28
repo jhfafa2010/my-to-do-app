@@ -277,6 +277,64 @@ body.motion-on .badge .badge__dot{animation:dotPulse 2.6s ease-out infinite}
   color:var(--muted);
 }
 
+/* ── 파트 목록 ────────────────────────── */
+.parts{
+  margin:14px 0 0;
+  padding:6px 6px 10px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:26px;
+  box-shadow:0 18px 46px -40px rgba(15,23,42,.5);
+}
+.parts__title{
+  margin:12px 14px 4px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.1em;
+  color:#93a0b1;
+}
+.part{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:10px 12px;
+  border:0;
+  border-radius:18px;
+  background:transparent;
+  font-family:inherit;
+  text-align:left;
+  color:var(--ink);
+  cursor:pointer;
+  transition:background .16s ease;
+}
+.part:hover{background:#f7f9fc}
+.part:active{background:#f1f5fa}
+.part:focus-visible{outline:3px solid rgba(16,185,129,.45);outline-offset:-2px}
+.part__ico{
+  width:40px;height:40px;flex:none;
+  display:grid;place-items:center;
+  border-radius:13px;
+  background:#f6f8fb;
+  border:1px solid var(--line);
+  font-size:19px;
+}
+.part__tx{flex:1;min-width:0}
+.part__tx b{
+  display:block;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:-.02em;
+}
+.part__tx span{
+  display:block;
+  margin-top:2px;
+  font-size:12px;
+  color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.part__go{flex:none;color:#c2cad5;font-size:17px;line-height:1}
+
 /* ── 바닥글 ───────────────────────────── */
 .foot{
   margin:18px 6px 0;
@@ -709,8 +767,11 @@ body.motion-on .heart__dot{animation:dotPulse 2s ease-out infinite}
   .badge__ico{font-size:10.5px}
   .tx-long{display:none}
   .tx-short{display:inline}
-  .hot{width:26%;filter:blur(.2px)}
+  .hot{width:19%}
   .hot i{width:4px;height:4px}
+  .parts{margin-top:12px;border-radius:22px}
+  .part{padding:9px 10px;gap:10px}
+  .part__ico{width:36px;height:36px;font-size:17px;border-radius:12px}
   .stage__hint{font-size:11px;margin-top:6px}
   .foot{margin-top:14px}
   .sheet__body{padding:14px 16px calc(28px + env(safe-area-inset-bottom))}
