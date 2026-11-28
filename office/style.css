@@ -191,8 +191,8 @@ body.motion-on .office::after{animation:sweep 11s ease-in-out 2s infinite}
   position:absolute;
   inset:-6%;
   border-radius:50%;
-  background:radial-gradient(circle at 50% 50%,rgba(45,212,191,.20) 0%,rgba(45,212,191,.07) 45%,rgba(45,212,191,0) 72%);
-  filter:blur(12px);
+  background:radial-gradient(circle at 50% 50%,rgba(45,212,191,.14) 0%,rgba(45,212,191,.05) 45%,rgba(45,212,191,0) 72%);
+  filter:blur(14px);
   animation:breathe 4.6s ease-in-out infinite;
 }
 .hot i{
@@ -211,8 +211,8 @@ body.motion-on .hot{opacity:1}
 body.motion-on .hot i{opacity:1}
 
 @keyframes breathe{
-  0%,100%{opacity:.38;transform:scale(.92)}
-  50%{opacity:.8;transform:scale(1.05)}
+  0%,100%{opacity:.15;transform:scale(.94)}
+  50%{opacity:.45;transform:scale(1.04)}
 }
 @keyframes rise{
   0%{transform:translate(-50%,0) scale(.7);opacity:0}
